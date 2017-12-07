@@ -2,10 +2,8 @@
 module Main where
 
 import Data.List (foldl')
-import qualified Data.Array.IArray as IA
 import qualified Data.Map.Strict as Map
-import Control.Arrow (second)
-import Data.Maybe (fromMaybe)
+import Control.Arrow (second, (&&&))
 
 --import Debug.Trace (trace)
 
@@ -17,10 +15,9 @@ type Memory = [Integer]
 type MemotyHash = Integer
 
 -- Structure to keep record of the visited memory states
-type MemStRec = Map.Map MemotyHash Bool
+type MemStRec = Map.Map MemotyHash Integer
 
 mkMemory :: [Integer] -> Memory
---mkMemory input = IA.listArray (0, fromIntegral $ length input - 1) input
 mkMemory = id
 
 memElems :: Memory -> [Integer]
@@ -41,22 +38,22 @@ memStep (rem, memAcc) memRem
     [] -> memStep (rem, []) (reverse memAcc)
     (x:xs) -> memStep (rem-1, (x+1):memAcc) xs
 
-balancer :: (Integer, (Memory, MemStRec)) -> (Integer, (Memory, MemStRec))
-balancer (count, (mem, memRec)) = trace (show memHsh) $
+balancer :: (Integer, (Integer, (Memory, MemStRec))) -> (Integer, (Integer, (Memory, MemStRec)))
+balancer (_, (count, (mem, memRec))) = trace (show memHsh) $
   case ((Map.!?) memRec memHsh) of
-    (Just _) -> (count, (mem, memRec))
+    (Just coutAtLoop) -> (coutAtLoop, (count, (mem, memRec)))
     Nothing -> case splitAtMax (memElems mem) of
       Nothing -> error "Empty memory?"
       Just (f, m:t) -> let (_, nextMem) = memStep (m, 0:reverse f) t
         in trace ("balancer: " ++ show nextMem) $
-          balancer (count+1, (mkMemory nextMem, Map.insert memHsh True memRec))
+          balancer (undefined, (count+1, (mkMemory nextMem, Map.insert memHsh count memRec)))
   where
   memHsh = memoryHash mem
 
 main :: IO ()
 main = do
   input <- fmap (read :: String -> Integer) . words <$> readFile "input.txt"
-  print $ fst $ balancer (0, (mkMemory input, Map.empty))
+  print $ (fst &&& (fst.snd)) $ balancer (0, (0, (mkMemory input, Map.empty)))
 
 splitAtMax :: [Integer] -> Maybe ([Integer], [Integer])
 splitAtMax = (second reverse . snd <$>) <$> foldl' folder Nothing

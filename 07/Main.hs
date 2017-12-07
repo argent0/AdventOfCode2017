@@ -4,6 +4,7 @@ import qualified Data.Map.Strict as Map
 import Data.List (foldl')
 import Control.Arrow
 import Data.Maybe (fromMaybe)
+import Data.List
 
 import Debug.Trace (trace)
 
@@ -34,15 +35,15 @@ treeElmsAlg (TreeF _ []) = 1
 treeElmsAlg (TreeF _ l) = 1 + sum l
 
 treeUnblcdAlg :: Algebra  (TreeF Record)
-                          ([(Name,[Integer])], Integer)
-treeUnblcdAlg (TreeF (Record n w _) []) = ([],w)
-treeUnblcdAlg (TreeF (Record n w _) pvs@((_,wc):t)) =
+                          (Integer, [Integer])
+treeUnblcdAlg (TreeF (Record n w _) []) = (w,[])
+treeUnblcdAlg (TreeF (Record n w _) pvs@(h:t)) =
   if pred
-    then (names,w+sum (map snd pvs))
-    else ((n++show w,map snd pvs):names,w+sum(map snd pvs))
+    then (w, resulWei)
+    else trace (show (Record n w []) ++ (show pvs) ++ "-->" ++ show resulWei) $ undefined
   where
-  names = concatMap fst pvs
-  pred = all (==wc) $ map snd t
+    pred = length (group resulWei) == 1
+    resulWei = map (\x -> fst x + sum (snd x)) pvs
 
 treeStrAlg :: Algebra (TreeF Record) String
 treeStrAlg (TreeF (Record n w []) []) = n++"("++show w++")"
