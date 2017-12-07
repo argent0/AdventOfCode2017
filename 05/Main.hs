@@ -1,31 +1,20 @@
+{-# LANGUAGE Strict #-}
 module Main where
 
-import qualified Data.Map.Lazy as Map
-import Data.Maybe (fromMaybe)
 import qualified Data.Array.IArray as IA
-import Debug.Trace (trace)
 
 -- Instruction pointer
 type IP = Integer
 type Addr = Integer
 type Instruction = Integer
 
-type JmpState = Map.Map Instruction Instruction
-
 -- Progs store their length: ask for the max index
 type Prog = IA.Array Addr Instruction
 
-type MachineState = (IP, JmpState, Prog)
-
--- evals a jump (altering the JmpState)
--- evlJmp :: Instruction -> JmpState -> JmpState
--- evlJmp ins js = Map.alter altr ins js
---   where
---   altr Nothing = Just (ins + 1)
---   altr (Just i) = Just (i + 1)
+type MachineState = (IP, Prog)
 
 sampleState :: MachineState
-sampleState = (0, Map.empty, IA.listArray (0,4) [0,3,0,1,-3])
+sampleState = (0, IA.listArray (0,4) [0,3,0,1,-3])
 
 input :: [Instruction]
 input = [
@@ -33,13 +22,10 @@ input = [
   ]
 
 inputState :: MachineState
-inputState = (0, Map.empty, IA.listArray (0, fromIntegral $ length input - 1) input)
-
-thrd :: (a,b,c) -> c
-thrd (_,_,c)  = c
+inputState = (0, IA.listArray (0, fromIntegral $ length input - 1) input)
 
 eval :: Integer -> MachineState -> (Integer, MachineState)
-eval acc ms@(ip, js, prg) = --trace (show (ip, IA.elems prg)) $ 
+eval acc ms@(ip, prg) =
   if nip >= 0 && nip <= snd (IA.bounds prg)
     then eval (acc+1) nMs
     else (acc+1, nMs)
@@ -47,17 +33,10 @@ eval acc ms@(ip, js, prg) = --trace (show (ip, IA.elems prg)) $
   instr = (IA.!) prg ip
   nip = ip + instr
 
-  --nJs = evlJmp instr js
-  nJs = js
+  -- nPrg = (IA.//) prg [(ip, instr+1)] --part 1
+  nPrg = (IA.//) prg [(ip, if instr >= 3 then instr-1 else instr+1)]
 
-  -- nPrg :: Prog
-  -- nPrg = IA.listArray (IA.bounds prg) $ map mapper $ IA.elems prg
-  nPrg = (IA.//) prg [(ip, instr+1)]
-
-  mapper :: Instruction -> Instruction
-  mapper x = fromMaybe x $ (Map.!?) nJs x
-
-  nMs = (nip, nJs, nPrg)
+  nMs = (nip, nPrg)
 
 main :: IO ()
-main = undefined
+main = print $ fst $ eval 0 inputState
