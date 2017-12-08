@@ -1,10 +1,9 @@
 module Main where
 
 import qualified Data.Map.Strict as Map
-import Data.List (foldl')
 import Control.Arrow
 import Data.Maybe (fromMaybe)
-import Data.List
+import Data.List (group)
 
 import Debug.Trace (trace)
 
@@ -51,8 +50,8 @@ treeUnblcdAlg (TreeF (Record n w _) acc) =
   if all isLeft acc
     then if pred
       then Left (w, resulWei)
-      else Right (show (Record n w []) ++ (show pvs) ++ "-->" ++ show resulWei)
-    else head $ filter (isRight) acc
+      else Right (show (Record n w []) ++ show pvs ++ "-->" ++ show resulWei)
+    else head $ filter isRight acc
   where
     pred = length (group resulWei) == 1
     resulWei = map (\x -> fst x + sum (snd x)) pvs
@@ -118,7 +117,7 @@ main = do
   let nRecs = length recs
   print nRecs
   let fulltree = fullTree Map.empty (Map.fromList $ map (recName &&& id) recs) (fromIntegral nRecs) recs
-  fromMaybe (putStr "Not Found\n") $ do
+  fromMaybe (putStr "Not Found\n") $ 
     --putStr <$> cata treeStrAlg <$> fulltree
     print <$> cata treeUnblcdAlg <$> fulltree
   --
