@@ -34,16 +34,29 @@ treeElmsAlg :: Algebra (TreeF a) Integer
 treeElmsAlg (TreeF _ []) = 1
 treeElmsAlg (TreeF _ l) = 1 + sum l
 
+isLeft :: Either a b -> Bool
+isLeft (Left _) = True
+isLeft _ = False
+
+isRight :: Either a b -> Bool
+isRight = not . isLeft
+
+fromLeft :: Either a b -> a
+fromLeft (Left a) = a
+
 treeUnblcdAlg :: Algebra  (TreeF Record)
-                          (Integer, [Integer])
-treeUnblcdAlg (TreeF (Record n w _) []) = (w,[])
-treeUnblcdAlg (TreeF (Record n w _) pvs@(h:t)) =
-  if pred
-    then (w, resulWei)
-    else trace (show (Record n w []) ++ (show pvs) ++ "-->" ++ show resulWei) $ undefined
+                          (Either (Integer, [Integer]) String)
+treeUnblcdAlg (TreeF (Record n w _) []) = Left (w,[])
+treeUnblcdAlg (TreeF (Record n w _) acc) =
+  if all isLeft acc
+    then if pred
+      then Left (w, resulWei)
+      else Right (show (Record n w []) ++ (show pvs) ++ "-->" ++ show resulWei)
+    else head $ filter (isRight) acc
   where
     pred = length (group resulWei) == 1
     resulWei = map (\x -> fst x + sum (snd x)) pvs
+    pvs = map fromLeft acc
 
 treeStrAlg :: Algebra (TreeF Record) String
 treeStrAlg (TreeF (Record n w []) []) = n++"("++show w++")"
