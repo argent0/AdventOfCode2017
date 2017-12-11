@@ -51,10 +51,10 @@ predOpFn PNEQ = (/=)
 
 parseInstruction :: String -> Instruction
 parseInstruction instStr = case words instStr of
-  [regName, op, intVal, "if", cRegName, pred, cIntVal] ->
+  [regName, op, intVal, "if", cRegName, predicate, cIntVal] ->
     Instruction
       (Expr regName (parseOp op) (read intVal))
-      $ Pred cRegName (parsePredOp pred) (read cIntVal)
+      $ Pred cRegName (parsePredOp predicate) (read cIntVal)
   _ -> error $ "Malformed input line: " ++ instStr
 
 getReg :: RegisterName -> Comp Integer
@@ -78,21 +78,20 @@ bool True a _ = a
 bool _ _ a = a
     
 eval :: Instruction -> Comp ()
-eval (Instruction expr pred) = do
-  predResult <- evalPred pred
+eval (Instruction expr predicate) = do
+  predResult <- evalPred predicate
   if predResult
     then doExpr expr
     else pure ()
 
 safeMaximum :: Ord a => [a] -> Maybe a
-safeMaximum [] = Nothing
-safeMaximum x = Just $ maximum x
+safeMaximum = getMax . foldMap (Max . Just)
 
 largestRegisterValue :: Comp (Maybe Integer)
 largestRegisterValue = safeMaximum <$> S.gets Map.elems
 
 main :: IO ()
-main = --undefined
+main =
   do
     instructions <- (fmap parseInstruction . lines) <$> readFile "input.txt"
     print $ S.evalState ( W.runWriterT $
