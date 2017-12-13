@@ -19,8 +19,8 @@ newtype Firewall = Firewall [Maybe Layer] deriving Show
 
 -- #step == layer
 -- Returns a list of whether the scanner got you
-part1 ::Integer -> Firewall -> [Bool]
-part1 delay (Firewall layers) = zipWith zipper layers [delay..]
+part2 ::Integer -> Firewall -> [Bool]
+part2 delay (Firewall layers) = zipWith zipper layers [delay..]
   where
   zipper :: Maybe Layer -> Integer -> Bool
   zipper Nothing _ = False
@@ -37,7 +37,7 @@ main = do
       map (mapper firewall) [0..]
   where
   mapper :: Firewall -> Integer -> (Integer, [Bool])
-  mapper firewall delay = (delay, part1 delay firewall)
+  mapper firewall delay = (delay, part2 delay firewall)
 
 parseInput :: String -> Either String Firewall
 parseInput input = Firewall . reverse . snd . foldl' folder (-1,[]) <$> mapM parseLine (lines input)
