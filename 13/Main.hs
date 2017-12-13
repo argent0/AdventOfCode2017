@@ -6,7 +6,6 @@ import Debug.Trace (trace)
 import Data.List (foldl')
 import Control.Arrow
 
--- Layer Range
 newtype Layer = Layer Integer  deriving Show
 _range :: Layer -> Integer
 _range (Layer r) = r
@@ -18,39 +17,27 @@ scannerPosition (Layer range) tick
 
 newtype Firewall = Firewall [Maybe Layer] deriving Show
 
-data HitchState = HitchState Integer Integer [Integer]
-_tick :: HitchState -> Integer
-_tick (HitchState t _ _) = t
-
-_depth :: HitchState -> Integer
-_depth (HitchState _ d _) = d
-
-_cost :: HitchState -> [Integer]
-_cost (HitchState _ _ c) = c
-
-part1 :: Firewall -> HitchState -> [Integer]
-part1 (Firewall layers) initialHitchState = _cost $ foldl' folder initialHitchState layers
+-- #step == layer
+-- Returns a list of whether the scanner got you
+part1 ::Integer -> Firewall -> [Bool]
+part1 delay (Firewall layers) = zipWith zipper layers [delay..]
   where
-  folder :: HitchState -> Maybe Layer -> HitchState
-  folder (HitchState t d c) Nothing = HitchState (succ t) (succ d) c
-  folder (HitchState t d c) (Just layer) = HitchState (succ t) (succ d) $
-    (if scannerPosition layer t == 0
-      then 1 -- d*_range layer
-      else 0):c
+  zipper :: Maybe Layer -> Integer -> Bool
+  zipper Nothing _ = False
+  zipper (Just layer) tick = scannerPosition layer tick == 0
 
 main :: IO ()
 main = do
-  parseResult <- parseInput <$> readFile "test.1.txt"
+  parseResult <- parseInput <$> readFile "input.txt"
   case parseResult of
     Left err -> print err
     Right firewall ->
-      --print $ part1 firewall (HitchState 0 0 [])
       print $ head $
-      filter (all (==0) . snd) $
+      filter (all not . snd) $
       map (mapper firewall) [0..]
   where
-  mapper :: Firewall -> Integer -> (Integer, [Integer])
-  mapper firewall delay = (delay, part1 firewall $ HitchState delay 0 [])
+  mapper :: Firewall -> Integer -> (Integer, [Bool])
+  mapper firewall delay = (delay, part1 delay firewall)
 
 parseInput :: String -> Either String Firewall
 parseInput input = Firewall . reverse . snd . foldl' folder (-1,[]) <$> mapM parseLine (lines input)
