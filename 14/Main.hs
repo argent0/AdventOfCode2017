@@ -2,20 +2,15 @@
 {-# LANGUAGE TupleSections #-}
 module Main where
 
-import Control.Arrow
 import Data.List (foldl')
 import Data.Char (ord)
 import Data.Bits
 import Text.Printf
 import Data.Maybe
-import Control.Monad
 import Data.Word (Word8)
 import Numeric
 import Data.Graph as G
-import Data.Tree as T
 import qualified Data.Array.IArray as IA
-
-import Debug.Trace (trace)
 
 data ListR a = ListR Int [a] deriving Show
 rotN :: Int -> Int -> ListR a -> ListR a
@@ -158,8 +153,6 @@ part2 key = length $ components gr
   mkNod cell = (cell, cell, diskAdjCells disk cell)
   disk :: Disk
   disk = IA.array ((0,0),(size,size)) $ zip ((,) <$> [0..size] <*> [0..size]) $ concat rowBits
-  --disk = IA.listArray ((0,0),(size,size)) $ concat rowBits
-  rowSums = map (sum . map boolToInt) rowBits
   rowBits = map (concatMap hexBits) rows
   rows = map (`rowHash` key) [0..size]
   size :: Int
