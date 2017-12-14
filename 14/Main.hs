@@ -124,25 +124,6 @@ diskAdjCellswS size disk pos =
   f :: Cell -> Bool
   f = (disk IA.!)
 
-g :: Graph
-g = gr
-  where
-  (gr,_,_) = G.graphFromEdges $
-    filter (\(_,_,l) -> not $ null l) $
-    map mkNod $ (,) <$> [0..size-1] <*> [0..size-1]
-  mkNod :: Cell -> (Cell, Cell, [Cell])
-  mkNod cell = (cell, cell, diskAdjCellswS size disk cell)
-  disk :: Disk
-  disk = IA.array ((0,0),(size-1,size-1)) $ zip ((,) <$> [0..size-1] <*> [0..size-1]) d 
-  d :: [Bool]
-  d = concat 
-    [ [True,True,False,False]
-    , [True,True,False,True]
-    , [False,False,False,False]
-    , [False,False,False,False] ]
-  size :: Int
-  size = 4
-
 part2 :: String -> Int
 part2 key = length $ components gr
   where
