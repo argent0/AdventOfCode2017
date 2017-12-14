@@ -39,7 +39,7 @@ toL (ListR rl p l) = let (h,t) = splitAt (rl - (p `mod` rl)) l in t++h
 --------------------------------------------------------------------------------
 -- Knot hashes
 
--- Evalutates a jump length
+-- Evaluates a jump length
 eval :: Int -> Int -> ListR Int -> ListR Int
 eval skip len l =
   rotN (len + skip) $ rev len l
