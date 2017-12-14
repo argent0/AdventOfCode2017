@@ -31,16 +31,16 @@ eval :: Int -> Int -> Int -> ListR Int -> ListR Int
 eval rl skip len l =
   rotN rl (len + skip) $ rev rl len l
 
-evalList' :: Int -> (Int,ListR Int) -> [Int] -> (Int, ListR Int)
-evalList' rl (skip,o) = foldl' folder (skip,o)
+evalList :: Int -> (Int,ListR Int) -> [Int] -> (Int, ListR Int)
+evalList rl (skip,o) = foldl' folder (skip,o)
   where
   folder :: (Int,ListR Int) -> Int -> (Int,ListR Int)
   folder (s,acc) i = (s+1, eval rl s i acc)
 
-passes' :: Int -> [Int] -> Int -> (Int, ListR Int)
-passes' rl i n = last $ take (n+1) $ iterate (`f` i) (0, ListR 0 [0..rl-1])
+passes :: Int -> [Int] -> Int -> (Int, ListR Int)
+passes rl i n = last $ take (n+1) $ iterate (`f` i) (0, ListR 0 [0..rl-1])
   where
-  f = evalList' rl
+  f = evalList rl
 
 denseHash :: [Int] -> [Int]
 denseHash [] = []
@@ -54,7 +54,7 @@ toL :: ListR a -> [a]
 toL (ListR p l) = let (h,t) = splitAt (length l - (p `mod`length l)) l in t++h
 
 knotHask' :: [Int] -> [Int]
-knotHask' input = denseHash $ toL $ snd $ passes' 256 (input++[17, 31, 73, 47, 23]) 64
+knotHask' input = denseHash $ toL $ snd $ passes 256 (input++[17, 31, 73, 47, 23]) 64
 
 hashSrt :: [Int] -> String
 hashSrt = concatMap (printf "%02x")

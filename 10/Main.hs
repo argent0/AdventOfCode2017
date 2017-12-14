@@ -58,6 +58,9 @@ denseHash l = if length chunk < 16
   where
   chunk =  take 16 l
 
+knotHask :: [Int] -> [Int]
+knotHask input = denseHash $ toL $ snd $ passes input 64
+
 hashSrt :: [Int] -> String
 hashSrt = concatMap (printf "%02x")
 
