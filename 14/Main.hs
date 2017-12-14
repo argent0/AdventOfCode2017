@@ -12,7 +12,7 @@ import Data.Graph as G
 import qualified Data.Array.IArray as IA
 
 --------------------------------------------------------------------------------
--- A cyclic list that keeps as current position
+-- A cyclic list that keeps a current position
 -- It supports the operations rotN and rev
 
 data ListR a = ListR
