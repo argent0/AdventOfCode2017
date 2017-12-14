@@ -37,6 +37,7 @@ toL :: ListR a -> [a]
 toL (ListR rl p l) = let (h,t) = splitAt (rl - (p `mod` rl)) l in t++h
 
 --------------------------------------------------------------------------------
+-- Knot hashes
 
 -- Evalutates a jump length
 eval :: Int -> Int -> ListR Int -> ListR Int
@@ -68,10 +69,6 @@ knotHash input = denseHash $ toL $ snd $ passes 256 (input++[17, 31, 73, 47, 23]
 hashSrt :: [Int] -> String
 hashSrt = concatMap (printf "%02x")
 
-testKey :: String
-testKey = "stpzcrnm"
---testKey = "flqrgnkx"
-
 --------------------------------------------------------------------------------
 -- Bit helpers
 bitRange :: Bits a => a -> Int -> Int -> [Bool]
@@ -82,6 +79,11 @@ bits n = bitRange n 0 (fromJust (bitSizeMaybe n) - 1)
 
 --------------------------------------------------------------------------------
 -- Day 14
+
+testKey :: String
+testKey = "stpzcrnm"
+--testKey = "flqrgnkx"
+
 rowHash :: Int -> String -> String
 rowHash rowNumber key = hashSrt $ knotHash $ map ord $ key ++ "-" ++ show rowNumber
 
