@@ -80,7 +80,7 @@ hexBits :: Char -> [Bool]
 hexBits a = drop 4 $ bits h
   where
   h :: Word8
-  h = fst $ head $ readHex $ [a]
+  h = fst $ head $ readHex [a]
 
 part1 :: String -> Int
 part1 key = sum rowSums
@@ -105,10 +105,10 @@ adjwS size col
 
 type Cell = (Int,Int)
 adjCells :: Cell -> [Cell]
-adjCells c@(row, col) = c:(map (,col) $ adj row) ++ (map (row,) $ adj col)
+adjCells c@(row, col) = c:(map (,col) (adj row) ++ map (row,) (adj col))
 
 adjCellswS :: Int -> Cell -> [Cell]
-adjCellswS size c@(row, col) = c:(map (,col) $ adjwS size row) ++ (map (row,) $ adjwS size col)
+adjCellswS size c@(row, col) = c:(map (,col) (adjwS size row) ++ map (row,) (adjwS size col))
 
 type Disk = IA.Array Cell Bool
 diskAdjCells :: Disk -> Cell -> [Cell]
@@ -121,7 +121,7 @@ diskAdjCells disk pos =
   f = (disk IA.!)
 
 diskAdjCellswS :: Int -> Disk -> Cell -> [Cell]
-diskAdjCellswS size disk pos = --filter f $ adjCellswS size pos
+diskAdjCellswS size disk pos =
   if disk IA.! pos
     then filter f $ adjCellswS size pos
     else []
