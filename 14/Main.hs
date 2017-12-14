@@ -53,8 +53,8 @@ denseHash l = if length chunk < 16
 toL :: ListR a -> [a]
 toL (ListR p l) = let (h,t) = splitAt (length l - (p `mod`length l)) l in t++h
 
-knotHask' :: [Int] -> [Int]
-knotHask' input = denseHash $ toL $ snd $ passes 256 (input++[17, 31, 73, 47, 23]) 64
+knotHash :: [Int] -> [Int]
+knotHash input = denseHash $ toL $ snd $ passes 256 (input++[17, 31, 73, 47, 23]) 64
 
 hashSrt :: [Int] -> String
 hashSrt = concatMap (printf "%02x")
@@ -64,7 +64,7 @@ testKey = "stpzcrnm"
 --testKey = "flqrgnkx"
 
 rowHash :: Int -> String -> String
-rowHash rowNumber key = hashSrt $ knotHask' $ map ord $ key ++ "-" ++ show rowNumber
+rowHash rowNumber key = hashSrt $ knotHash $ map ord $ key ++ "-" ++ show rowNumber
 
 bitRange :: Bits a => a -> Int -> Int -> [Bool]
 bitRange n lo hi = reverse $ map (testBit n) [lo..hi]
