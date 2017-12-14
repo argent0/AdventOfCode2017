@@ -1,4 +1,3 @@
-{-# LANGUAGE Strict #-}
 {-# LANGUAGE TupleSections #-}
 module Main where
 
@@ -71,6 +70,7 @@ boolToInt :: Bool -> Int
 boolToInt True = 1
 boolToInt False = 0
 
+-- raises error if Char is not valid hex
 hexBits :: Char -> [Bool]
 hexBits a = drop 4 $ bits h
   where
