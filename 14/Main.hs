@@ -11,30 +11,48 @@ import Numeric
 import Data.Graph as G
 import qualified Data.Array.IArray as IA
 
-data ListR a = ListR Int [a] deriving Show
-rotN :: Int -> Int -> ListR a -> ListR a
-rotN rl n (ListR p l) = ListR (p+n) $
+--------------------------------------------------------------------------------
+-- A cyclic list that keeps as current position
+-- It supports the operations rotN and rev
+
+data ListR a = ListR
+  Int --list length
+  Int --list current position
+  [a] --list content
+  deriving Show
+
+listRlength :: ListR a -> Int
+listRlength (ListR l _ _) = l
+
+rotN :: Int -> ListR a -> ListR a
+rotN n (ListR rl p l) = ListR rl (p+n) $
   take rl $ drop n $ l ++ cycle l
 
-rev :: Int -> Int -> ListR a -> ListR a
-rev rl n (ListR p l) = let
+rev :: Int -> ListR a -> ListR a
+rev n (ListR rl p l) = let
   (h,t) = splitAt n (cycle l)
-  in ListR p $ take rl $ reverse h ++ t
+  in ListR rl p $ take rl $ reverse h ++ t
 
-eval :: Int -> Int -> Int -> ListR Int -> ListR Int
-eval rl skip len l =
-  rotN rl (len + skip) $ rev rl len l
+toL :: ListR a -> [a]
+toL (ListR rl p l) = let (h,t) = splitAt (rl - (p `mod` rl)) l in t++h
 
-evalList :: Int -> (Int,ListR Int) -> [Int] -> (Int, ListR Int)
-evalList rl (skip,o) = foldl' folder (skip,o)
+--------------------------------------------------------------------------------
+
+-- Evalutates a jump length
+eval :: Int -> Int -> ListR Int -> ListR Int
+eval skip len l =
+  rotN (len + skip) $ rev len l
+
+-- Evalutates a list of jumps
+evalList :: (Int,ListR Int) -> [Int] -> (Int, ListR Int)
+evalList (skip,o) = foldl' folder (skip,o)
   where
   folder :: (Int,ListR Int) -> Int -> (Int,ListR Int)
-  folder (s,acc) i = (s+1, eval rl s i acc)
+  folder (s,acc) i = (s+1, eval s i acc)
 
+-- Does the passes
 passes :: Int -> [Int] -> Int -> (Int, ListR Int)
-passes rl i n = last $ take (n+1) $ iterate (`f` i) (0, ListR 0 [0..rl-1])
-  where
-  f = evalList rl
+passes rl i n = last $ take (n+1) $ iterate (`evalList` i) (0, ListR rl 0 [0..rl-1])
 
 denseHash :: [Int] -> [Int]
 denseHash [] = []
@@ -43,9 +61,6 @@ denseHash l = if length chunk < 16
   else foldl' xor 0 chunk : denseHash (drop 16 l)
   where
   chunk =  take 16 l
-
-toL :: ListR a -> [a]
-toL (ListR p l) = let (h,t) = splitAt (length l - (p `mod`length l)) l in t++h
 
 knotHash :: [Int] -> [Int]
 knotHash input = denseHash $ toL $ snd $ passes 256 (input++[17, 31, 73, 47, 23]) 64
@@ -57,14 +72,18 @@ testKey :: String
 testKey = "stpzcrnm"
 --testKey = "flqrgnkx"
 
-rowHash :: Int -> String -> String
-rowHash rowNumber key = hashSrt $ knotHash $ map ord $ key ++ "-" ++ show rowNumber
-
+--------------------------------------------------------------------------------
+-- Bit helpers
 bitRange :: Bits a => a -> Int -> Int -> [Bool]
 bitRange n lo hi = reverse $ map (testBit n) [lo..hi]
 
 bits :: Bits a => a -> [Bool]
 bits n = bitRange n 0 (fromJust (bitSizeMaybe n) - 1)
+
+--------------------------------------------------------------------------------
+-- Day 14
+rowHash :: Int -> String -> String
+rowHash rowNumber key = hashSrt $ knotHash $ map ord $ key ++ "-" ++ show rowNumber
 
 boolToInt :: Bool -> Int
 boolToInt True = 1
