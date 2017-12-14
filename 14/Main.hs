@@ -44,7 +44,7 @@ eval :: Int -> Int -> ListR Int -> ListR Int
 eval skip len l =
   rotN (len + skip) $ rev len l
 
--- Evalutates a list of jumps
+-- Evaluates a list of jumps
 evalList :: (Int,ListR Int) -> [Int] -> (Int, ListR Int)
 evalList (skip,o) = foldl' folder (skip,o)
   where
